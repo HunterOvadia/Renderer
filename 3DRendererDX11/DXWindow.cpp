@@ -136,6 +136,55 @@ LRESULT DXWindow::HandleMessage(HWND WindowHandle, UINT Message, WPARAM WParam, 
 			Keyboard.ClearState();
 			break;
 		}
+
+		case WM_MOUSEMOVE:
+		{
+			POINTS Point = MAKEPOINTS(LParam);
+			Mouse.OnMouseMove(Point.x, Point.y);
+			break;
+		}
+
+		case WM_LBUTTONDOWN:
+		{
+			const POINTS Point = MAKEPOINTS(LParam);
+			Mouse.OnLeftPressed(Point.x, Point.y);
+			break;
+		}
+
+		case WM_RBUTTONDOWN:
+		{
+			const POINTS Point = MAKEPOINTS(LParam);
+			Mouse.OnRightPressed(Point.x, Point.y);
+			break;
+		}
+
+		case WM_LBUTTONUP:
+		{
+			const POINTS Point = MAKEPOINTS(LParam);
+			Mouse.OnLeftReleased(Point.x, Point.y);
+			break;
+		}
+
+		case WM_RBUTTONUP:
+		{
+			const POINTS Point = MAKEPOINTS(LParam);
+			Mouse.OnRightReleased(Point.x, Point.y);
+			break;
+		}
+
+		case WM_MOUSEWHEEL:
+		{
+			const POINTS Point = MAKEPOINTS(LParam);
+			if (GET_WHEEL_DELTA_WPARAM(WParam) > 0)
+			{
+				Mouse.OnWheelUp(Point.x, Point.y);
+			}
+			else if (GET_WHEEL_DELTA_WPARAM(WParam) < 0)
+			{
+				Mouse.OnWheelDown(Point.x, Point.y);
+			}
+			break;
+		}
 	}
 
 	return DefWindowProc(WindowHandle, Message, WParam, LParam);

@@ -2,6 +2,7 @@
 #include "DXCore.h"
 #include "DXException.h"
 #include "DXKeyboard.h"
+#include "DXMouse.h"
 
 class DXWindow
 {
@@ -52,6 +53,7 @@ private:
 
 public:
 	DXKeyboard Keyboard;
+	DXMouse Mouse;
 
 private:
 	int Width;
