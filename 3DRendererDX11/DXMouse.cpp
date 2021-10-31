@@ -1,4 +1,5 @@
 #include "DXMouse.h"
+#include <Windows.h>
 
 std::pair<int, int> DXMouse::GetPos() const
 {
@@ -13,6 +14,11 @@ int DXMouse::GetPosX() const
 int DXMouse::GetPosY() const
 {
     return Y;
+}
+
+bool DXMouse::IsInWindow() const
+{
+    return bIsInWindow;
 }
 
 bool DXMouse::IsLeftPressed() const
@@ -50,6 +56,20 @@ void DXMouse::OnMouseMove(int X, int Y)
     this->Y = Y;
 
     Buffer.push(MouseEvent(MouseEvent::EType::Move, *this));
+    TrimBuffer();
+}
+
+void DXMouse::OnMouseEnter()
+{
+    bIsInWindow = true;
+    Buffer.push(MouseEvent(MouseEvent::EType::Enter, *this));
+    TrimBuffer();
+}
+
+void DXMouse::OnMouseExit()
+{
+    bIsInWindow = false;
+    Buffer.push(MouseEvent(MouseEvent::EType::Exit, *this));
     TrimBuffer();
 }
 
@@ -98,5 +118,21 @@ void DXMouse::TrimBuffer()
     while (Buffer.size() > BufferSize)
     {
         Buffer.pop();
+    }
+}
+
+void DXMouse::OnWheelDelta(int X, int Y, int Delta)
+{
+    WheelDeltaCarry += Delta;
+    while (WheelDeltaCarry >= WHEEL_DELTA)
+    {
+        WheelDeltaCarry -= WHEEL_DELTA;
+        OnWheelUp(X, Y);
+    }
+
+    while (WheelDeltaCarry <= -WHEEL_DELTA)
+    {
+        WheelDeltaCarry += WHEEL_DELTA;
+        OnWheelDown(X, Y);
     }
 }

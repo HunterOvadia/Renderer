@@ -45,6 +45,7 @@ public:
 	~DXWindow();
 	DXWindow(const DXWindow&) = delete;
 	DXWindow& operator=(const DXWindow&) = delete;
+	void SetTitle(const std::string& Title);
 
 private:
 	static LRESULT CALLBACK HandleMessageSetup(HWND WindowHandle, UINT Message, WPARAM WParam, LPARAM LParam);

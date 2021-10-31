@@ -20,6 +20,14 @@ DXWindow::DXWindowClass::~DXWindowClass()
 	UnregisterClass(WindowClassName, GetInstance());
 }
 
+void DXWindow::SetTitle(const std::string& Title)
+{
+	if (SetWindowText(WindowHandle, Title.c_str()) == 0)
+	{
+		throw DXWND_LAST_EXCEPT();
+	}
+}
+
 const char* DXWindow::DXWindowClass::GetName()
 {
 	return WindowClassName;
@@ -40,7 +48,7 @@ DXWindow::DXWindow(int Width, int Height, const char* Title)
 	WindowRect.right = Width + WindowRect.left;
 	WindowRect.top = 100;
 	WindowRect.bottom = Height + WindowRect.top;
-	if (FAILED(AdjustWindowRect(&WindowRect, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE)))
+	if (AdjustWindowRect(&WindowRect, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE) == 0)
 	{
 		throw DXWND_LAST_EXCEPT();
 	}
@@ -139,8 +147,28 @@ LRESULT DXWindow::HandleMessage(HWND WindowHandle, UINT Message, WPARAM WParam, 
 
 		case WM_MOUSEMOVE:
 		{
-			POINTS Point = MAKEPOINTS(LParam);
-			Mouse.OnMouseMove(Point.x, Point.y);
+			const POINTS Point = MAKEPOINTS(LParam);
+			if (Point.x >= 0 && Point.x < Width && Point.y >= 0 && Point.y < Height)
+			{
+				Mouse.OnMouseMove(Point.x, Point.y);
+				if (!Mouse.IsInWindow())
+				{
+					SetCapture(WindowHandle);
+					Mouse.OnMouseEnter();
+				}
+			}
+			else
+			{
+				if (WParam & (MK_LBUTTON | MK_RBUTTON))
+				{
+					Mouse.OnMouseMove(Point.x, Point.y);
+				}
+				else
+				{
+					ReleaseCapture();
+					Mouse.OnMouseExit();
+				}
+			}
 			break;
 		}
 
@@ -162,6 +190,11 @@ LRESULT DXWindow::HandleMessage(HWND WindowHandle, UINT Message, WPARAM WParam, 
 		{
 			const POINTS Point = MAKEPOINTS(LParam);
 			Mouse.OnLeftReleased(Point.x, Point.y);
+			if (Point.x < 0 || Point.x >= Width || Point.y < 0 || Point.y >= Height)
+			{
+				ReleaseCapture();
+				Mouse.OnMouseExit();
+			}
 			break;
 		}
 
@@ -169,20 +202,19 @@ LRESULT DXWindow::HandleMessage(HWND WindowHandle, UINT Message, WPARAM WParam, 
 		{
 			const POINTS Point = MAKEPOINTS(LParam);
 			Mouse.OnRightReleased(Point.x, Point.y);
+			if (Point.x < 0 || Point.x >= Width || Point.y < 0 || Point.y >= Height)
+			{
+				ReleaseCapture();
+				Mouse.OnMouseExit();
+			}
 			break;
 		}
 
 		case WM_MOUSEWHEEL:
 		{
 			const POINTS Point = MAKEPOINTS(LParam);
-			if (GET_WHEEL_DELTA_WPARAM(WParam) > 0)
-			{
-				Mouse.OnWheelUp(Point.x, Point.y);
-			}
-			else if (GET_WHEEL_DELTA_WPARAM(WParam) < 0)
-			{
-				Mouse.OnWheelDown(Point.x, Point.y);
-			}
+			const int Delta = GET_WHEEL_DELTA_WPARAM(WParam);
+			Mouse.OnWheelDelta(Point.x, Point.y, Delta);
 			break;
 		}
 	}
