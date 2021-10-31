@@ -28,6 +28,23 @@ void DXWindow::SetTitle(const std::string& Title)
 	}
 }
 
+std::optional<int> DXWindow::ProcessMessages()
+{
+	MSG Message;
+	while (PeekMessage(&Message, nullptr, 0, 0, PM_REMOVE))
+	{
+		if (Message.message == WM_QUIT)
+		{
+			return (int)Message.wParam;
+		}
+
+		TranslateMessage(&Message);
+		DispatchMessage(&Message);
+	}
+
+	return {};
+}
+
 const char* DXWindow::DXWindowClass::GetName()
 {
 	return WindowClassName;

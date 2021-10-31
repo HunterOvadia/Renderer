@@ -3,6 +3,7 @@
 #include "DXException.h"
 #include "DXKeyboard.h"
 #include "DXMouse.h"
+#include <optional>
 
 class DXWindow
 {
@@ -46,6 +47,7 @@ public:
 	DXWindow(const DXWindow&) = delete;
 	DXWindow& operator=(const DXWindow&) = delete;
 	void SetTitle(const std::string& Title);
+	static std::optional<int> ProcessMessages();
 
 private:
 	static LRESULT CALLBACK HandleMessageSetup(HWND WindowHandle, UINT Message, WPARAM WParam, LPARAM LParam);
