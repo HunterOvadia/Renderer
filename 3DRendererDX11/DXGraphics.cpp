@@ -87,19 +87,18 @@ void DXGraphics::ClearBuffer(float Red, float Green, float Blue)
 
 void DXGraphics::DrawTestTriangle()
 {
-	namespace wrl = Microsoft::WRL;
 	HRESULT hr;
 
-	struct Vertex { float x, y; };
+	struct Vertex { float x, y, r, g, b; };
 
 	const Vertex Vertices[] =
 	{
-		{ 0.0f, 0.5f },
-		{ 0.5f, -0.5f },
-		{ -0.5f, -0.5f }
+		{ 0.0f, 0.5f, 1.0f, 0.0f, 0.0f },
+		{ 0.5f, -0.5f, 0.0f, 1.0f, 0.0f },
+		{ -0.5f, -0.5f, 0.0f, 0.0f, 1.0f }
 	};
 
-	wrl::ComPtr<ID3D11Buffer> VertexBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> VertexBuffer;
 	D3D11_BUFFER_DESC BufferDesc = { 0 };
 	BufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	BufferDesc.ByteWidth = sizeof(Vertices);
@@ -114,24 +113,26 @@ void DXGraphics::DrawTestTriangle()
 	Context->IASetVertexBuffers(0u, 1u, VertexBuffer.GetAddressOf(), &Stride, &Offset);
 
 	// NOTE(HO): Pixel Shader
-	wrl::ComPtr<ID3DBlob> Blob;
-	wrl::ComPtr<ID3D11PixelShader> PixelShader;
+	Microsoft::WRL::ComPtr<ID3DBlob> Blob;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> PixelShader;
 	GFX_THROW_INFO(D3DReadFileToBlob(L"PixelShader.cso", &Blob));
 	GFX_THROW_INFO(Device->CreatePixelShader(Blob->GetBufferPointer(), Blob->GetBufferSize(), nullptr, &PixelShader));
 	Context->PSSetShader(PixelShader.Get(), nullptr, 0u);
 
 	// NOTE(HO): Vertex Shader
-	wrl::ComPtr<ID3D11VertexShader> VertexShader;
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> VertexShader;
 	GFX_THROW_INFO(D3DReadFileToBlob(L"VertexShader.cso", &Blob));
 	GFX_THROW_INFO(Device->CreateVertexShader(Blob->GetBufferPointer(), Blob->GetBufferSize(), nullptr, &VertexShader));
 	Context->VSSetShader(VertexShader.Get(), nullptr, 0u);
 
 	// NOTE(HO): Vertex Layout
-	wrl::ComPtr<ID3D11InputLayout> InputLayout;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> InputLayout;
 	const D3D11_INPUT_ELEMENT_DESC InputElementDesc[] =
 	{
 		{ "Position", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "Color", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 8u, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
+
 	GFX_THROW_INFO(Device->CreateInputLayout(InputElementDesc, (sizeof(InputElementDesc) / sizeof(D3D11_INPUT_ELEMENT_DESC)), Blob->GetBufferPointer(), Blob->GetBufferSize(), &InputLayout));
 	Context->IASetInputLayout(InputLayout.Get());
 	Context->OMSetRenderTargets(1u, Target.GetAddressOf(), nullptr);
