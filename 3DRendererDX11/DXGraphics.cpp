@@ -91,11 +91,22 @@ void DXGraphics::DrawTestTriangle()
 
 	struct Vertex 
 	{
-		float x, y;
-		unsigned char r, g, b, a;
+		struct
+		{
+			float X;
+			float Y;
+		} Position;
+
+		struct
+		{
+			unsigned char Red;
+			unsigned char Green;
+			unsigned char Blue;
+			unsigned char Alpha;
+		} Color;
 	};
 
-	const Vertex Vertices[] =
+	Vertex Vertices[] =
 	{
 		{ 0.0f, 0.5f, 255, 0, 0, 0 },
 		{ 0.5f, -0.5f, 0, 255, 0, 0 },
