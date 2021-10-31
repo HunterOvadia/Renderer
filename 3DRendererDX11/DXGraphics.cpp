@@ -89,13 +89,17 @@ void DXGraphics::DrawTestTriangle()
 {
 	HRESULT hr;
 
-	struct Vertex { float x, y, r, g, b; };
+	struct Vertex 
+	{
+		float x, y;
+		unsigned char r, g, b, a;
+	};
 
 	const Vertex Vertices[] =
 	{
-		{ 0.0f, 0.5f, 1.0f, 0.0f, 0.0f },
-		{ 0.5f, -0.5f, 0.0f, 1.0f, 0.0f },
-		{ -0.5f, -0.5f, 0.0f, 0.0f, 1.0f }
+		{ 0.0f, 0.5f, 255, 0, 0, 0 },
+		{ 0.5f, -0.5f, 0, 255, 0, 0 },
+		{ -0.5f, -0.5f, 0, 0, 255, 0 }
 	};
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> VertexBuffer;
@@ -130,7 +134,7 @@ void DXGraphics::DrawTestTriangle()
 	const D3D11_INPUT_ELEMENT_DESC InputElementDesc[] =
 	{
 		{ "Position", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "Color", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 8u, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		{ "Color", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 8u, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
 
 	GFX_THROW_INFO(Device->CreateInputLayout(InputElementDesc, (sizeof(InputElementDesc) / sizeof(D3D11_INPUT_ELEMENT_DESC)), Blob->GetBufferPointer(), Blob->GetBufferSize(), &InputLayout));
