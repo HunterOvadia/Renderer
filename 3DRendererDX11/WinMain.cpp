@@ -1,4 +1,4 @@
-#include "DXWindow.h"
+#include "App.h"
 
 int CALLBACK WinMain(
 	HINSTANCE Instance, 
@@ -8,22 +8,8 @@ int CALLBACK WinMain(
 {
 	try 
 	{
-		DXWindow Window(800, 300, "DXRenderer");
-
-		MSG Message;
-		BOOL Result;
-		while ((Result = GetMessage(&Message, nullptr, 0, 0)) > 0)
-		{
-			TranslateMessage(&Message);
-			DispatchMessage(&Message);
-		}
-
-		if (Result == -1)
-		{
-			throw DXWND_LAST_EXCEPT();
-		}
-
-		return Message.wParam;
+		App MyApp;
+		return MyApp.PumpMessages();
 	}
 	catch (const DXException& e)
 	{
