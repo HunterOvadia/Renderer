@@ -1,6 +1,7 @@
 #pragma once
 #include "DXCore.h"
 #include "DXException.h"
+#include "DXKeyboard.h"
 
 class DXWindow
 {
@@ -48,6 +49,9 @@ private:
 	static LRESULT CALLBACK HandleMessageSetup(HWND WindowHandle, UINT Message, WPARAM WParam, LPARAM LParam);
 	static LRESULT CALLBACK HandleMessageThunk(HWND WindowHandle, UINT Message, WPARAM WParam, LPARAM LParam);
 	LRESULT CALLBACK HandleMessage(HWND WindowHandle, UINT Message, WPARAM WParam, LPARAM LParam);
+
+public:
+	DXKeyboard Keyboard;
 
 private:
 	int Width;

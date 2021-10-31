@@ -107,6 +107,35 @@ LRESULT DXWindow::HandleMessage(HWND WindowHandle, UINT Message, WPARAM WParam, 
 			PostQuitMessage(0);
 			break;
 		}
+
+		case WM_KEYDOWN:
+		case WM_SYSKEYDOWN:
+		{
+			if (!(LParam & 0x40000000) || Keyboard.IsAutorepeatEnabled())
+			{
+				Keyboard.OnKeyPressed(static_cast<unsigned char>(WParam));
+			}
+			break;
+		}
+
+		case WM_KEYUP:
+		case WM_SYSKEYUP:
+		{
+			Keyboard.OnKeyReleased(static_cast<unsigned char>(WParam));
+			break;
+		}
+
+		case WM_CHAR:
+		{
+			Keyboard.OnChar(static_cast<unsigned char>(WParam));
+			break;
+		}
+
+		case WM_KILLFOCUS:
+		{
+			Keyboard.ClearState();
+			break;
+		}
 	}
 
 	return DefWindowProc(WindowHandle, Message, WParam, LParam);
