@@ -1,9 +1,23 @@
 #pragma once
-#include <Windows.h>
+#include "DXCore.h"
+#include "DXException.h"
 
 class DXWindow
 {
 public:
+	class DXWindowException : public DXException
+	{
+	public:
+		DXWindowException(int Line, const char* File, HRESULT Result);
+		const char* what() const override;
+		virtual const char* GetType() const override;
+		static std::string TranslateErrorCode(HRESULT Result);
+		HRESULT GetErrorCode() const;
+		std::string GetErrorString() const;
+
+	private:
+		HRESULT Result;
+	};
 
 private:
 	class DXWindowClass
@@ -40,3 +54,6 @@ private:
 	int Height;
 	HWND WindowHandle;
 };
+
+#define DXWND_EXCEPTION(Handle) DXWindow::DXWindowException(__LINE__, __FILE__, Handle)
+#define DXWND_LAST_EXCEPT() DXWindow::DXWindowException(__LINE__, __FILE__, GetLastError())
