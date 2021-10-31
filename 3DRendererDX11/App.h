@@ -13,4 +13,5 @@ private:
 
 private:
 	DXWindow Window;
+	DXTimer Timer;
 };

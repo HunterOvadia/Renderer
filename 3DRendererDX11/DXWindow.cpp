@@ -45,6 +45,15 @@ std::optional<int> DXWindow::ProcessMessages()
 	return {};
 }
 
+DXGraphics& DXWindow::GetGraphics()
+{
+	if (!Graphics)
+	{
+		throw DXWND_NOGFX_EXCEPT();
+	}
+	return *Graphics;
+}
+
 const char* DXWindow::DXWindowClass::GetName()
 {
 	return WindowClassName;
@@ -83,6 +92,7 @@ DXWindow::DXWindow(int Width, int Height, const char* Title)
 	}
 
 	ShowWindow(WindowHandle, SW_SHOWDEFAULT);
+	Graphics = std::make_unique<DXGraphics>(WindowHandle);
 }
 
 DXWindow::~DXWindow()
@@ -239,32 +249,10 @@ LRESULT DXWindow::HandleMessage(HWND WindowHandle, UINT Message, WPARAM WParam, 
 	return DefWindowProc(WindowHandle, Message, WParam, LParam);
 }
 
-DXWindow::DXWindowException::DXWindowException(int Line, const char* File, HRESULT Result) :
-	DXException(Line, File)
-{
-	this->Result = Result;
-}
-
-const char* DXWindow::DXWindowException::what() const
-{
-	std::ostringstream StringStream;
-	StringStream << GetType() << std::endl
-		<< "[Error Code]: " << GetErrorCode() << std::endl
-		<< "[Description]: " << GetErrorString() << std::endl
-		<< GetOriginString();
-	WhatBuffer = StringStream.str();
-	return WhatBuffer.c_str();
-}
-
-const char* DXWindow::DXWindowException::GetType() const
-{
-	return "DXWindow Exception";
-}
-
-std::string DXWindow::DXWindowException::TranslateErrorCode(HRESULT Result)
+std::string DXWindow::Exception::TranslateErrorCode(HRESULT Result)
 {
 	char* MessageBuffer = nullptr;
-	DWORD MessageLength = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+	const DWORD MessageLength = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
 										nullptr, Result, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 										reinterpret_cast<LPSTR>(&MessageBuffer), 0, nullptr);
 	if (MessageLength == 0)
@@ -277,12 +265,42 @@ std::string DXWindow::DXWindowException::TranslateErrorCode(HRESULT Result)
 	return ErrorString;
 }
 
-HRESULT DXWindow::DXWindowException::GetErrorCode() const
+DXWindow::HrException::HrException(int Line, const char* File, HRESULT Result)
+	: Exception(Line, File),
+	  Result(Result)
+{
+}
+
+const char* DXWindow::HrException::what() const
+{
+	std::ostringstream StringStream;
+
+	StringStream << GetType() << std::endl
+		<< "[Error Code] 0x" << std::hex << std::uppercase << GetErrorCode()
+		<< std::dec << " (" << (unsigned long)GetErrorCode() << ")" << std::endl
+		<< "[Description] " << GetErrorDescription() << std::endl
+		<< GetOriginString();
+
+	WhatBuffer = StringStream.str();
+	return WhatBuffer.c_str();
+}
+
+const char* DXWindow::HrException::GetType() const
+{
+	return "DX Window Exception";
+}
+
+HRESULT DXWindow::HrException::GetErrorCode() const
 {
 	return Result;
 }
 
-std::string DXWindow::DXWindowException::GetErrorString() const
+std::string DXWindow::HrException::GetErrorDescription() const
 {
-	return TranslateErrorCode(Result);
+	return Exception::TranslateErrorCode(Result);
+}
+
+const char* DXWindow::NoGfxException::GetType() const
+{
+	return "DX Window Exception [No Graphics]";
 }
