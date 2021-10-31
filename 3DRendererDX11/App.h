@@ -1,5 +1,6 @@
 #pragma once
 #include "DXWindow.h"
+#include "DXTimer.h"
 
 class App
 {
@@ -12,4 +13,5 @@ private:
 
 private:
 	DXWindow Window;
+	DXTimer Timer;
 };
