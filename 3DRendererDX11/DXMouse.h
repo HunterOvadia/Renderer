@@ -1,5 +1,6 @@
 #pragma once
 #include <queue>
+#include <optional>
 
 class DXMouse
 {
@@ -19,19 +20,13 @@ public:
 				Move,
 				Enter,
 				Exit,
-				Invalid
 			};
 
 	public:
-		MouseEvent() : Type(EType::Invalid), 
-			bIsLeftPressed(false), bIsRightPressed(false),
-			X(0), Y(0) {}
-
 		MouseEvent(EType Type, const DXMouse& Parent) : Type(Type), 
 			bIsLeftPressed(Parent.bIsLeftPressed), bIsRightPressed(Parent.bIsRightPressed),
 			X(Parent.X), Y(Parent.Y) {}
 
-		bool IsValid() const { return Type != EType::Invalid; }
 		EType GetType() const { return Type; }
 		std::pair<int, int> GetPos() const { return { X, Y }; }
 		int GetPosX() const { return X; }
@@ -57,7 +52,7 @@ public:
 	bool IsInWindow() const;
 	bool IsLeftPressed() const;
 	bool IsRightPressed() const;
-	MouseEvent Read();
+	std::optional<MouseEvent> Read();
 	void Flush();
 
 	bool IsEmpty() const { return Buffer.empty(); }

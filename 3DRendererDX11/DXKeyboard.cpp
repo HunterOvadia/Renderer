@@ -5,7 +5,7 @@ bool DXKeyboard::IsKeyPressed(unsigned char KeyCode) const
 	return KeyStates[KeyCode];
 }
 
-DXKeyboard::KeyboardEvent DXKeyboard::ReadKey()
+std::optional<DXKeyboard::KeyboardEvent> DXKeyboard::ReadKey()
 {
 	if (KeyBuffer.size() > 0u)
 	{
@@ -15,7 +15,7 @@ DXKeyboard::KeyboardEvent DXKeyboard::ReadKey()
 	}
 	else
 	{
-		return DXKeyboard::KeyboardEvent();
+		return {};
 	}
 }
 
@@ -29,7 +29,7 @@ void DXKeyboard::FlushKey()
 	KeyBuffer = std::queue<KeyboardEvent>();
 }
 
-char DXKeyboard::ReadChar()
+std::optional<char> DXKeyboard::ReadChar()
 {
 	if (CharBuffer.size() > 0u)
 	{
@@ -39,7 +39,7 @@ char DXKeyboard::ReadChar()
 	}
 	else
 	{
-		return 0;
+		return {};
 	}
 }
 

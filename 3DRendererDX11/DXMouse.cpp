@@ -31,7 +31,9 @@ bool DXMouse::IsRightPressed() const
     return bIsRightPressed;
 }
 
-DXMouse::MouseEvent DXMouse::Read()
+
+
+std::optional<DXMouse::MouseEvent> DXMouse::Read()
 {
     if (Buffer.size() > 0u)
     {
@@ -41,7 +43,7 @@ DXMouse::MouseEvent DXMouse::Read()
     }
     else
     {
-        return MouseEvent();
+        return {};
     }
 }
 

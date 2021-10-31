@@ -1,6 +1,7 @@
 #pragma once
 #include <queue>
 #include <bitset>
+#include <optional>
 
 class DXKeyboard
 {
@@ -14,16 +15,14 @@ public:
 		{
 			Press,
 			Release,
-			Invalid
 		};
 
 	public:
-		KeyboardEvent() : Type(EType::Invalid), Code(0u) {}
 		KeyboardEvent(EType Type, unsigned char Code) : Type(Type), Code(Code) {}
 		bool IsPressed() const { return Type == EType::Press; }
 		bool IsReleased() const { return Type == EType::Release; }
-		bool IsValid() const { return Type != EType::Invalid; }
 		unsigned char GetCode() const { return Code; }
+
 	private:
 		EType Type;
 		unsigned char Code;
@@ -35,11 +34,11 @@ public:
 	DXKeyboard& operator=(const DXKeyboard&) = delete;
 
 	bool IsKeyPressed(unsigned char KeyCode) const;
-	KeyboardEvent ReadKey();
+	std::optional<KeyboardEvent> ReadKey();
 	bool IsKeyEmpty() const;
 	void FlushKey();
 
-	char ReadChar();
+	std::optional<char> ReadChar();
 	bool IsCharEmpty() const;
 	void FlushChar();
 	void Flush();
