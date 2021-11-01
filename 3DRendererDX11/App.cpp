@@ -22,6 +22,6 @@ void App::Update()
 {
 	const float Color = sin(Timer.Peek()) / 2.0f + 0.5f;
 	Window.GetGraphics().ClearBuffer(Color, Color, 1.0f);
-	Window.GetGraphics().DrawTestTriangle();
+	Window.GetGraphics().DrawTestTriangle(Timer.Peek());
 	Window.GetGraphics().EndFrame();
 }

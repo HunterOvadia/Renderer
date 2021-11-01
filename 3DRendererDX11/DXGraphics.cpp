@@ -2,6 +2,7 @@
 #include "DirectXError.h"
 #include <sstream>
 #include <d3dcompiler.h>
+#include <cmath>
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "D3DCompiler.lib")
@@ -85,7 +86,7 @@ void DXGraphics::ClearBuffer(float Red, float Green, float Blue)
 	}
 }
 
-void DXGraphics::DrawTestTriangle()
+void DXGraphics::DrawTestTriangle(float Angle)
 {
 	HRESULT hr;
 
@@ -106,6 +107,7 @@ void DXGraphics::DrawTestTriangle()
 		} Color;
 	};
 
+	// NOTE(HO): Vertex Buffer
 	Vertex Vertices[] =
 	{
 		{ 0.0f, 0.5f, 255, 0, 0, 0 },
@@ -113,7 +115,7 @@ void DXGraphics::DrawTestTriangle()
 		{ -0.5f, -0.5f, 0, 0, 255, 0 },
 		{ -0.3f, 0.3f, 0, 255, 0, 0 },
 		{ 0.3f, 0.3f, 0, 0, 255, 0 },
-		{ 0.0f, -0.8f, 255, 0, 0, 0 }
+		{ 0.0f, -1.0f, 255, 0, 0, 0 }
 	};
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> VertexBuffer;
@@ -121,6 +123,7 @@ void DXGraphics::DrawTestTriangle()
 	VertBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	VertBufferDesc.ByteWidth = sizeof(Vertices);
 	VertBufferDesc.StructureByteStride = sizeof(Vertex);
+	
 	D3D11_SUBRESOURCE_DATA VertData = { 0 };
 	VertData.pSysMem = Vertices;
 
@@ -130,6 +133,7 @@ void DXGraphics::DrawTestTriangle()
 	const UINT Offset = 0u;
 	Context->IASetVertexBuffers(0u, 1u, VertexBuffer.GetAddressOf(), &Stride, &Offset);
 
+	// NOTE(HO): Index Buffer
 	const unsigned short Indices[] =
 	{
 		0, 1, 2,
@@ -143,10 +147,45 @@ void DXGraphics::DrawTestTriangle()
 	IndexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	IndexBufferDesc.ByteWidth = sizeof(Indices);
 	IndexBufferDesc.StructureByteStride = sizeof(unsigned short);
+
 	D3D11_SUBRESOURCE_DATA IndexData = { 0 };
 	IndexData.pSysMem = Indices;
+	
 	GFX_THROW_INFO(Device->CreateBuffer(&IndexBufferDesc, &IndexData, &IndexBuffer));
 	Context->IASetIndexBuffer(IndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
+
+	// NOTE(HO): Constant Buffer
+	struct ConstantBufferData
+	{
+		struct
+		{
+			float Element[4][4];
+		} Transformation;
+	};
+
+	const ConstantBufferData Buffers =
+	{
+		{
+			(3.0f / 4.0f)* std::cos(Angle),		std::sin(Angle),	0.0f,	0.0f,
+			(3.0f / 4.0f) * -std::sin(Angle),	std::cos(Angle),	0.0f,	0.0f,
+			0.0f,								0.0f,				1.0f,	0.0f,
+			0.0f,								0.0f,				0.0f,	1.0f,
+		}
+	};
+
+	Microsoft::WRL::ComPtr<ID3D11Buffer> ConstantBuffer;
+	D3D11_BUFFER_DESC ConstantBufferDesc = { 0 };
+	ConstantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	ConstantBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	ConstantBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	ConstantBufferDesc.ByteWidth = sizeof(Buffers);
+	ConstantBufferDesc.StructureByteStride = 0u;
+
+	D3D11_SUBRESOURCE_DATA ConstantBufferData = { 0 };
+	ConstantBufferData.pSysMem = &Buffers;
+
+	GFX_THROW_INFO(Device->CreateBuffer(&ConstantBufferDesc, &ConstantBufferData, &ConstantBuffer));
+	Context->VSSetConstantBuffers(0u, 1u, ConstantBuffer.GetAddressOf());
 
 	// NOTE(HO): Pixel Shader
 	Microsoft::WRL::ComPtr<ID3DBlob> Blob;
@@ -168,7 +207,6 @@ void DXGraphics::DrawTestTriangle()
 		{ "Position", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "Color", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, 8u, D3D11_INPUT_PER_VERTEX_DATA, 0 }
 	};
-
 	GFX_THROW_INFO(Device->CreateInputLayout(InputElementDesc, (sizeof(InputElementDesc) / sizeof(D3D11_INPUT_ELEMENT_DESC)), Blob->GetBufferPointer(), Blob->GetBufferSize(), &InputLayout));
 	Context->IASetInputLayout(InputLayout.Get());
 	Context->OMSetRenderTargets(1u, Target.GetAddressOf(), nullptr);
