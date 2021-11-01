@@ -60,7 +60,7 @@ public:
 
 	void EndFrame();
 	void ClearBuffer(float Red, float Green, float Blue);
-	void DrawTestTriangle(float Angle, float X, float Y);
+	void DrawTestTriangle(float Angle, float X, float Z);
 
 private:
 #ifndef NDEBUG
@@ -72,5 +72,7 @@ private:
 	Microsoft::WRL::ComPtr<IDXGISwapChain> SwapChain;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> Context;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> Target;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> DepthStencilView;
+
 };
 
