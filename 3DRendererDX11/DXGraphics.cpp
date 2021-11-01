@@ -110,22 +110,43 @@ void DXGraphics::DrawTestTriangle()
 	{
 		{ 0.0f, 0.5f, 255, 0, 0, 0 },
 		{ 0.5f, -0.5f, 0, 255, 0, 0 },
-		{ -0.5f, -0.5f, 0, 0, 255, 0 }
+		{ -0.5f, -0.5f, 0, 0, 255, 0 },
+		{ -0.3f, 0.3f, 0, 255, 0, 0 },
+		{ 0.3f, 0.3f, 0, 0, 255, 0 },
+		{ 0.0f, -0.8f, 255, 0, 0, 0 }
 	};
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> VertexBuffer;
-	D3D11_BUFFER_DESC BufferDesc = { 0 };
-	BufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	BufferDesc.ByteWidth = sizeof(Vertices);
-	BufferDesc.StructureByteStride = sizeof(Vertex);
-	D3D11_SUBRESOURCE_DATA SubresourceData = { 0 };
-	SubresourceData.pSysMem = Vertices;
+	D3D11_BUFFER_DESC VertBufferDesc = { 0 };
+	VertBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	VertBufferDesc.ByteWidth = sizeof(Vertices);
+	VertBufferDesc.StructureByteStride = sizeof(Vertex);
+	D3D11_SUBRESOURCE_DATA VertData = { 0 };
+	VertData.pSysMem = Vertices;
 
-	GFX_THROW_INFO(Device->CreateBuffer(&BufferDesc, &SubresourceData, &VertexBuffer));
+	GFX_THROW_INFO(Device->CreateBuffer(&VertBufferDesc, &VertData, &VertexBuffer));
 
 	const UINT Stride = sizeof(Vertex);
 	const UINT Offset = 0u;
 	Context->IASetVertexBuffers(0u, 1u, VertexBuffer.GetAddressOf(), &Stride, &Offset);
+
+	const unsigned short Indices[] =
+	{
+		0, 1, 2,
+		0, 2, 3,
+		0, 4, 1,
+		2, 1, 5
+	};
+
+	Microsoft::WRL::ComPtr<ID3D11Buffer> IndexBuffer;
+	D3D11_BUFFER_DESC IndexBufferDesc = { 0 };
+	IndexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	IndexBufferDesc.ByteWidth = sizeof(Indices);
+	IndexBufferDesc.StructureByteStride = sizeof(unsigned short);
+	D3D11_SUBRESOURCE_DATA IndexData = { 0 };
+	IndexData.pSysMem = Indices;
+	GFX_THROW_INFO(Device->CreateBuffer(&IndexBufferDesc, &IndexData, &IndexBuffer));
+	Context->IASetIndexBuffer(IndexBuffer.Get(), DXGI_FORMAT_R16_UINT, 0u);
 
 	// NOTE(HO): Pixel Shader
 	Microsoft::WRL::ComPtr<ID3DBlob> Blob;
@@ -159,7 +180,7 @@ void DXGraphics::DrawTestTriangle()
 	Viewport.MaxDepth = 1;
 
 	Context->RSSetViewports(1u, &Viewport);
-	GFX_THROW_INFO_ONLY(Context->Draw((sizeof(Vertices) / sizeof(Vertex)), 0));
+	GFX_THROW_INFO_ONLY(Context->DrawIndexed((sizeof(Indices) / sizeof(unsigned short)), 0u, 0u));
 }
 
 DXGraphics::HrException::HrException(int Line, const char* File, HRESULT Result, std::vector<std::string> InfoMessages)
