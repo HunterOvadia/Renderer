@@ -3,6 +3,7 @@
 #include <sstream>
 #include <d3dcompiler.h>
 #include <cmath>
+#include <DirectXMath.h>
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "D3DCompiler.lib")
@@ -28,9 +29,10 @@ DXGraphics::DXGraphics(HWND WindowHandle)
 	SwapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	SwapChainDesc.SampleDesc.Count = 1;
 	SwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	SwapChainDesc.BufferCount = 1;
 	SwapChainDesc.OutputWindow = WindowHandle;
 	SwapChainDesc.Windowed = TRUE;
+	SwapChainDesc.BufferCount = 2;
+	SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
 	UINT SwapCreateFlags = 0u;
 #ifndef NDEBUG
@@ -86,7 +88,7 @@ void DXGraphics::ClearBuffer(float Red, float Green, float Blue)
 	}
 }
 
-void DXGraphics::DrawTestTriangle(float Angle)
+void DXGraphics::DrawTestTriangle(float Angle, float X, float Y)
 {
 	HRESULT hr;
 
@@ -157,19 +159,13 @@ void DXGraphics::DrawTestTriangle(float Angle)
 	// NOTE(HO): Constant Buffer
 	struct ConstantBufferData
 	{
-		struct
-		{
-			float Element[4][4];
-		} Transformation;
+		DirectX::XMMATRIX Transform;
 	};
 
 	const ConstantBufferData Buffers =
 	{
 		{
-			(3.0f / 4.0f)* std::cos(Angle),		std::sin(Angle),	0.0f,	0.0f,
-			(3.0f / 4.0f) * -std::sin(Angle),	std::cos(Angle),	0.0f,	0.0f,
-			0.0f,								0.0f,				1.0f,	0.0f,
-			0.0f,								0.0f,				0.0f,	1.0f,
+			DirectX::XMMatrixTranspose(DirectX::XMMatrixRotationZ(Angle) * DirectX::XMMatrixScaling(3.0f / 4.0f, 1.0f, 1.0f) * DirectX::XMMatrixTranslation(X, Y, 0.0f))
 		}
 	};
 

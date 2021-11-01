@@ -203,6 +203,7 @@ LRESULT DXWindow::HandleMessage(HWND WindowHandle, UINT Message, WPARAM WParam, 
 		{
 			const POINTS Point = MAKEPOINTS(LParam);
 			Mouse.OnLeftPressed(Point.x, Point.y);
+			SetForegroundWindow(WindowHandle);
 			break;
 		}
 
